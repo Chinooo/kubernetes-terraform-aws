@@ -78,13 +78,12 @@ def createComponents(steps, _id, tasks):
 
 
 def updateComponent(key, bol, tasks):
-    groups = cachet.Groups(endpoint=ENDPOINT, api_token=API_TOKEN)
+    components = cachet.Components(endpoint=ENDPOINT, api_token=API_TOKEN)
     tmp = 3 if bol else 1
     try:
         #deleting colors from terminal output
         color = re.compile(r'\x1b[^m]*m')
-        tmp2 = tasks[color.sub('', key)]
-        groups.put(id=tmp2, status=tmp) 
+        components.put(id=tasks[color.sub('', key)], status=tmp) 
     except KeyError as ke:
         print ke
         pass
@@ -94,7 +93,7 @@ _id = createGroup()
 print " ... Listing tasks ... "
 myrun("terraform graph", True, tasks) #getSteps
 string = toString(string, steps)
-print " ... Adding tasks to the dashboard ... "
+print " ... Adding tasks to dashboard ... "
 tasks = createComponents(steps, _id, tasks)
 print " ... Listing status ... "
 myrun("terraform apply", False, tasks) #getStatus

@@ -2,7 +2,7 @@ import cachetclient.cachet as cachet
 import json
 
 
-ENDPOINT = 'http://test.com/api/v1'
+ENDPOINT = 'http:/test.com/api/v1'
 API_TOKEN = 'token_api'
 
 
