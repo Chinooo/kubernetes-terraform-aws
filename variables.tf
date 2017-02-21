@@ -18,36 +18,28 @@ variable "portal_net" {
     default = "10.0.0.0/16"
 }
 
-variable "num_etcd" {
-    default = 0
-}
-
 variable "num_master" {
     default = 1
 }
 
-variable "num_worker" {
+variable "num_minion" {
     default = 1
 }
 
 variable "ami" {
-    default = "ami-66e30706"
-}
-
-variable "etcd_instance_type" {
-    default = "t2.small"
+    default = "ami-2709bd47"
 }
 
 variable "master_instance_type" {
-    default = "t2.small"
+    default = "m4.xlarge"
 }
 
-variable "worker_instance_type" {
-    default = "m3.medium"
+variable "minion_instance_type" {
+    default = "m4.xlarge"
 }
 
 variable "kubernetes_version" {
-    default = "1.1.7"
+    default = "1.5.0"
 }
 
 variable "pod_network" {

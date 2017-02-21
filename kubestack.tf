@@ -20,7 +20,7 @@ resource "aws_vpc" "kubernetes" {
 resource "aws_subnet" "kubernetes" {
     vpc_id = "${aws_vpc.kubernetes.id}"
     cidr_block = "172.20.250.0/24"
-
+    availability_zone = "us-west-2a"
     tags {
         Name = "kubernetes-${var.cluster_name}"
     }
@@ -56,7 +56,6 @@ resource "aws_route_table_association" "kubernetes" {
 resource "aws_security_group" "kubernetes" {
     name = "kubernetes-${var.cluster_name}"
     vpc_id = "${aws_vpc.kubernetes.id}"
-
     tags {
         Name = "kubernetes-${var.cluster_name}"
     }
@@ -110,19 +109,77 @@ resource "aws_security_group_rule" "allow_all_egress" {
 # MASTER #
 ##########
 
+resource "aws_instance" "master" {
+    ami = "${var.ami}"
+    instance_type = "${var.master_instance_type}"
+    security_groups = [ "${aws_security_group.kubernetes.id}" ]
+    subnet_id = "${aws_subnet.kubernetes.id}"
+    associate_public_ip_address = true
+    key_name = "${var.ssh_key_name}"
+
+    connection {
+        user = "ubuntu"
+        agent = true
+    }
+
+    tags {
+        Name = "${var.cluster_name}-master"
+        Cluster = "${var.cluster_name}"
+        Role = "master"
+    }
+}
 
 ###########
 # MINIONS #
 ###########
 
+resource "aws_launch_configuration" "minion" {
+    image_id = "${var.ami}"
+    instance_type = "${var.minion_instance_type}"
+    security_groups = [ "${aws_security_group.kubernetes.id}" ]
+    associate_public_ip_address = true
+    key_name = "${var.ssh_key_name}"
+}
+
+resource "aws_autoscaling_group" "minion" {
+    name = "${var.cluster_name}-k8s-minion"
+    launch_configuration = "${aws_launch_configuration.minion.name}"
+    max_size = "${var.num_minion}"
+    min_size = "${var.num_minion}"
+    desired_capacity = "${var.num_minion}"
+    vpc_zone_identifier = [ "${aws_subnet.kubernetes.id}" ]
+
+    tag {
+        key = "Name"
+        value = "${var.cluster_name}-minion"
+        propagate_at_launch = true
+    }
+
+    tag {
+        key = "Cluster"
+        value = "${var.cluster_name}"
+        propagate_at_launch = true
+    }
+
+    tag {
+        key = "Role"
+        value = "minion"
+        propagate_at_launch = true
+    }
+}
 
 #######
 # EFS #
 #######
 
-#resource "aws_efs_file_system" "aws-efs" {
-#  creation_token = "adop.efs"
-#  tags {
-#    name = "ADOP-EFS"
-#  }
-#}
+resource "aws_efs_file_system" "kubernetes" {
+  creation_token = "kubernetes.efs"
+  tags {
+    Name = "kubernetes-${var.cluster_name}"
+  }
+}
+
+resource "aws_efs_mount_target" "kubernetes" {
+  file_system_id = "${aws_efs_file_system.kubernetes.id}"
+  subnet_id = "${aws_subnet.kubernetes.id}"
+}
