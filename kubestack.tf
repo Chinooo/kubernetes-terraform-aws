@@ -97,14 +97,6 @@ resource "aws_security_group_rule" "allow_all_egress" {
     security_group_id = "${aws_security_group.kubernetes.id}"
 }
 
-#######
-# IAM #
-#######
-
-# aws_iam_role
-# aws_iam_role_policy
-# aws_iam_instance_profile
-
 ##########
 # MASTER #
 ##########
@@ -117,9 +109,14 @@ resource "aws_instance" "master" {
     associate_public_ip_address = true
     key_name = "${var.ssh_key_name}"
 
+    root_block_device {
+    	volume_size = 40
+    }
+
     connection {
-        user = "ubuntu"
+    	user = "ubuntu"
         agent = true
+	private_key = "${file("Hum_do.pem")}"
     }
 
     tags {
@@ -127,59 +124,59 @@ resource "aws_instance" "master" {
         Cluster = "${var.cluster_name}"
         Role = "master"
     }
+
+    provisioner "remote-exec" {
+        inline = [
+	"git clone https://github.com/DigitalOnUs/automated_scripts.git",
+	"cd automated_scripts ",
+	"sudo sh startclustr.sh"
+        ]
+    }
 }
 
 ###########
 # MINIONS #
 ###########
 
-resource "aws_launch_configuration" "minion" {
-    image_id = "${var.ami}"
-    instance_type = "${var.minion_instance_type}"
+resource "aws_instance" "minion" {
+    ami = "${var.ami}"
+    instance_type = "${var.master_instance_type}"
     security_groups = [ "${aws_security_group.kubernetes.id}" ]
+    subnet_id = "${aws_subnet.kubernetes.id}"
     associate_public_ip_address = true
     key_name = "${var.ssh_key_name}"
-}
 
-resource "aws_autoscaling_group" "minion" {
-    name = "${var.cluster_name}-k8s-minion"
-    launch_configuration = "${aws_launch_configuration.minion.name}"
-    max_size = "${var.num_minion}"
-    min_size = "${var.num_minion}"
-    desired_capacity = "${var.num_minion}"
-    vpc_zone_identifier = [ "${aws_subnet.kubernetes.id}" ]
-
-    tag {
-        key = "Name"
-        value = "${var.cluster_name}-minion"
-        propagate_at_launch = true
+    root_block_device {
+	volume_size = 40
     }
 
-    tag {
-        key = "Cluster"
-        value = "${var.cluster_name}"
-        propagate_at_launch = true
+    connection {
+        user = "ubuntu"
+        agent = true
+        private_key = "${file("Hum_do.pem")}"
     }
 
-    tag {
-        key = "Role"
-        value = "minion"
-        propagate_at_launch = true
-    }
-}
+    tags {                                                                                          
+        Name = "${var.cluster_name}-minion"                                                         
+        Cluster = "${var.cluster_name}"                                                             
+        Role = "minion"                                                                             
+    }                                                                                               
+                                                                                                    
+    provisioner "remote-exec" {                                                                     
+        inline = [                                                                                  
+        "git clone https://github.com/DigitalOnUs/automated_scripts.git",                           
+        "cd automated_scripts ",                                                                    
+        "sudo sh starter-minion.sh"                                                                    
+        ]                                                                                           
+    }                                                                                               
+} 
 
 #######
 # EFS #
 #######
 
-resource "aws_efs_file_system" "kubernetes" {
-  creation_token = "kubernetes.efs"
-  tags {
-    Name = "kubernetes-${var.cluster_name}"
-  }
-}
-
 resource "aws_efs_mount_target" "kubernetes" {
-  file_system_id = "${aws_efs_file_system.kubernetes.id}"
+  file_system_id = "fs-da935a73"
   subnet_id = "${aws_subnet.kubernetes.id}"
+  security_groups = ["${aws_security_group.kubernetes.id}"]
 }
