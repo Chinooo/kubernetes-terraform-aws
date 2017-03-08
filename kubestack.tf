@@ -139,7 +139,7 @@ resource "aws_instance" "master" {
     connection {
     	user = "ubuntu"
         agent = true
-	private_key = "${file("Hum_do.pem")}"
+	private_key = "${file("${var.ssh_key_name}.pem")}"
     }
 
     tags {
@@ -176,7 +176,7 @@ resource "aws_instance" "minion" {
     connection {
         user = "ubuntu"
         agent = true
-        private_key = "${file("Hum_do.pem")}"
+        private_key = "${file("${var.ssh_key_name}.pem")}"
     }
 
     tags {                                                                                          
@@ -199,7 +199,7 @@ resource "null_resource" "minion" {
 	host = "${aws_instance.minion.public_ip}"
 	user = "ubuntu"                                                                                                  
         agent = true                                                                                                     
-        private_key = "${file("Hum_do.pem")}"                                                                            
+        private_key = "${file("${var.ssh_key_name}.pem")}"                                                                            
     }
 
     provisioner "remote-exec" {                                                                                          
