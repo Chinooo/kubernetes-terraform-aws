@@ -1,0 +1,25 @@
+{
+	"variables": {
+  		"aws_access_key": "foo",
+		"aws_secret_key": "bar"
+	},
+	"builders": [{
+		"type": "amazon-ebs",
+		"access_key": "{{user `aws_access_key`}}",
+		"secret_key": "{{user `aws_secret_key`}}",
+		"region": "us-west-2",
+		"source_ami": "ami-2709bd47",
+		"instance_type": "m4.xlarge",
+		"ssh_username": "ubuntu",
+		"ami_name": "worker {{isotime \"2006-02-Jan\"}}"
+	}],
+	"provisioners": [{
+		"type": "shell",
+		"inline": [
+			"sleep 30",
+			"git clone https://github.com/DigitalOnUs/automated_scripts.git",
+			"cd automated_scripts",
+			"sudo sh starter-minion.sh"
+		]
+	}]
+}
