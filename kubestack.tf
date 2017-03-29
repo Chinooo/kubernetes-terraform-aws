@@ -203,7 +203,8 @@ resource "null_resource" "minion" {
     }
 
     provisioner "remote-exec" {                                                                                          
-        inline = [                                                                                                       
+        inline = [
+	    "sleep 80"	
             "sudo kubeadm join --token=y2bcde.zv1gcyg9wn2ov12o ${aws_instance.master.private_ip}"                        
         ]                                                                                                                
     } 
