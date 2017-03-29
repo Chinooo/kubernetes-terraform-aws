@@ -21,6 +21,7 @@
 
 __Useful commands__
 `terraform validate`
+`terraform fmt`
 `terraform plan`
 `terraform graph | dot -Tpng > graph.png`
 `watch kubectl get pods -n devops`
