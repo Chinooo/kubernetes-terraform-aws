@@ -4,9 +4,9 @@ provider "aws" {
   region     = "${var.region}"
 }
 
-#######
-# VPC #
-#######
+###########
+# Network #
+###########
 
 resource "aws_vpc" "kubernetes" {
   cidr_block           = "172.20.0.0/16"
@@ -54,9 +54,9 @@ resource "aws_route_table_association" "kubernetes" {
   route_table_id = "${aws_route_table.kubernetes.id}"
 }
 
-######################
-# Network & Security #
-######################
+############
+# Firewall #
+############
 
 resource "aws_security_group" "kubernetes" {
   name   = "kubernetes-${var.cluster_name}"
