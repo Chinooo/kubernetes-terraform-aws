@@ -206,7 +206,7 @@ resource "null_resource" "minion" {
 
   provisioner "remote-exec" {
     inline = [
-      "sudo kubeadm join --token=y2bcde.zv1gcyg9wn2ov12o 172.20.250.82",
+      "sudo kubeadm join --token y2bcde.zv1gcyg9wn2ov12o 172.20.250.82:6443",
     ]
   }
 }
