@@ -91,11 +91,11 @@ def updateComponent(key, bol, tasks):
 
 _id = createGroup()
 print " ... Listing tasks ... "
-myrun("terraform graph", True, tasks) #getSteps
+myrun("cd .. ; terraform graph", True, tasks) #getSteps
 string = toString(string, steps)
 print " ... Adding tasks to dashboard ... "
 tasks = createComponents(steps, _id, tasks)
 print " ... Listing status ... "
-myrun("terraform apply", False, tasks) #getStatus
+myrun("cd .. ; terraform apply", False, tasks) #getStatus
 #print " ... Destroying ... "
 #myrun("terraform destroy -force", False, tasks)
