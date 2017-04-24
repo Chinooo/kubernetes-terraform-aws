@@ -15,7 +15,6 @@ resource "aws_instance" "master" {
   subnet_id                   = "${aws_subnet.kubernetes.id}"
   associate_public_ip_address = true
   key_name                    = "${var.ssh_key_name}"
-  private_ip                  = "172.20.250.82"
 
   root_block_device {
     volume_size = 40
@@ -89,7 +88,7 @@ resource "null_resource" "minion" {
 
   provisioner "remote-exec" {
     inline = [
-      "sudo kubeadm join --token y2bcde.zv1gcyg9wn2ov12o 172.20.250.82:6443",
+      "sudo kubeadm join --token y2bcde.zv1gcyg9wn2ov12o ${aws_instance.master.private_ip}:6443",
     ]
   }
 }
